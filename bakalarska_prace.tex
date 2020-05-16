@@ -11,6 +11,7 @@
 \usepackage{subcaption}
 \usepackage[colorinlistoftodos,prependcaption]{todonotes} %textsize = tiny option
 \usepackage{xargs}                      % Use more than one optional parameter in a new commands
+\usepackage{epstopdf}
 %\usepackage[dvipsnames]{xcolor}  % Coloured text etc.
 %\usepackage[unicode]{hyperref}
 \newcommand{\spc}[2]{$\mathbb{#1}^{#2}$}
@@ -22,6 +23,9 @@
 \newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
 \newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
 \newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommand{\rectangle}{{%
+  \ooalign{$\sqsubset\mkern3mu$\cr$\mkern3mu\sqsupset$\cr}%
+}}
 
 \input{inputs/ctu_setup.tex}
 \begin{document}
@@ -30,6 +34,19 @@
 %\part{Teoretická část}
 %\chapter{Teoretická část}
 \chapter{Úvod}
+V poslední době došlo k prudkému růstu počtu bezpilotních letounů, nejpoužívanějšími z nich jsou kvadrokoptéry, které se často osznačují jako drony. Drony se nejčastěji využívají pro pořízování videí a fotografií, za účelem strategického průzkumu, mapování, trasnportu, atd. S postupným rozšiřováním bezpilotních letounů přibývá i množství těch autonomních. Ty jsou schopni vnímat okolní prostředí a na základě těchto podnětů upravovat chování za účelem splnění předem zadaného úkolu.
+
+Obvyklími senzory pro získání informace z okolního prostředí bývají různé verze IMU (Inertial measurement unit), což je typ zařízení, který zaznamenává úhlovou rychlost, zrychlení a někdy i polohu bezpilotních letounů. K těmto úkonům využívají většinou akcelerometr, gyroskop a magnetometr. Dalším častým zařízením, pro registraci okolí, je kamera. Její použití je však vzhledem k absenci informace o vzdálenosti jednotlivých bodů omezené a musí být často kombinována s dalšími senzory, jako je IMU, nebo LIDAR, což je zařízení, které laserovým paprskem skenuje daný prostor a vrací vzdálenost od objektů nacházejících se v daném prostoru, neboli mračno bodů.
+
+Uceleným řešením je stereokamera, která poskytuje jak obraz okolí, tak i informaci o vzdálenosti jednotlivých bodů. Vzhledem k postupnému zvyšování přesnosti těchto kamer a nízké ceně se stereo kamer začíná stále více využívat pro získávání informací u samořiditelných strojů.
+
+Motivací této práce byla soutěž MBZIRC, kde skupina dronů a autonomních pozemních vozidel, spolupracuje na připravených výzvách. Jednou z těchto výzev byl sběr na zemi ležících cihel s předem známými rozměry a následné skládání těchto cihel do zdi. Cílem této práce je vytvoření programu, který bude schopen v reálném čase přesně detekovat pozice jednotlivých cihel. Tato informace je pak dále zpracována a využita k uchopení jednotlivých cihel a jejich následnému umístění do zdi.
+
+
+Tato práce je rozdělena na pět částí. V první části jsou shrnuty hlavní prvky matematického aparátu, které byly použity při zhotovení praktické časti práce. Dále je popsán princip použitých algoritmů.  Ve druhé části je představen základní model kamery. Následně je popsán princip funkce stereo kamery a s tím související epipolární gemetrie. Dále je stručně představeno několik algoritmů, využívaných k získání stereo páru a tedy informace o vzdálenosti daného bodu obrazu. Nakonec je představena Intel\textregistered{} RealSense$^{TM}$ kamera, kterou jsme v naši práci využili.
+Ve třetí části práce je čtenář seznámen s metodami detekce z hloubkových dat. Tato kapitola je členěna na metody pro detekci plochy, segmentaci obrazu a nalezení jednotlivých objektů z již segmentovaných dat.
+Čtvrtá část představuje náše postupy pro detekci cihel ze stereo kamery, jedná se především o kombinaci jednotlivých postupů představených v čtvrté kapitole a jejich úpravu pro zlepšní výsledků našeho programu. Výsledky jsou následně prezentováný v páte části práce, kde je zároveň čtenář seznámem s metodou vyhodnocování výsledků.
+
 \chapter{Matematický aparát}
 \section{Homogenní souřadnice}
 Během celé práce budu pracovat jak s kartézskými, tak i s homogenními souřadnicemi. Ty jsou v Euklidovském prostoru dimenze $n$ reprezentovány pomocí vektoru, který má $n+1$ prvků. Je-li $\boldsymbol{r}$ bod v trojdimenzionálním Euklidovském prostoru $\mathbb{E}^3$ reprezentován parametry $x,y,z$, pak pro převod mezi kartézskými a homogenními souřadnicemi platí následující vztahy.
@@ -187,29 +204,29 @@ Písmenem $m$ je označen počet vzorků potřebný k určení modelu.
     \caption{Vliv bodu zatíženého chybou na prokládaní přímky pomocí nejmenších čtverců \cite{fischler1981random}}
     \label{fig:least_squares_error}
 \end{figure}
-\section{Vlastní čísla a vektory}
-Pro čtvercovou matici \minsp{A}{R}{n\times n} a nenulový vektor \tl{v}\minsp{}{R}{n} a sklár $\lambda \in \mathbb{R}$ platí
-\begin{align}
-    \mathbf{Av} = \lambda \mathbf{v}.
-\end{align}
-Skalár $\lambda$ se nazývá vlastní číslo matice \tl{A} a vektor \tl{v} vlastní vektor příslušný vlastnímu číslu $\lambda$.
-Spektrální věta (viz. \cite{Werner2020}) říka: Je-li matice \tl{A} symetrická, pak má $n$ vlastních čísel, kde $n = \text{rank}\mathbf{A}$ a všechna vlastní čísla jsou reálná.
-\todo[inline]{Bude upraveno podle toho, co bude potřeba na popsání funkce PCA, SVD a ortogonální projekce}
+%\section{Vlastní čísla a vektory}
+%Pro čtvercovou matici \minsp{A}{R}{n\times n} a nenulový vektor \tl{v}\minsp{}{R}{n} a sklár $\lambda \in \mathbb{R}$ platí
+%\begin{align}
+    %\mathbf{Av} = \lambda \mathbf{v}.
+%\end{align}
+%Skalár $\lambda$ se nazývá vlastní číslo matice \tl{A} a vektor \tl{v} vlastní vektor příslušný vlastnímu číslu $\lambda$.
+%Spektrální věta (viz. \cite{Werner2020}) říka: Je-li matice \tl{A} symetrická, pak má $n$ vlastních čísel, kde $n = \text{rank}\mathbf{A}$ a všechna vlastní čísla jsou reálná.
+%\todo[inline]{Bude upraveno podle toho, co bude potřeba na popsání funkce PCA, SVD a ortogonální projekce}
 
 
-\section{Singulární rozklad}
-\todo[inline]{Stručně posat singulární rozklad PCA a ortogonální projekci na podprostor}
-Singulární SVD\footnote{Z anglického Singular Value Decomposition}rozklad umožní každou matici \tl{A} $\in$ \spc{R}{m \times n} rozložit jako
-\begin{align}
-    \mathbf{A} = \mathbf{USV}^T
-\end{align}
-kde matice \tl{S} je diagonální, matice \tl{U} je ortogonální a obsahje vlastní vektory matice \tl{AA}$^T$, obdobně je pak i matice \tl{V} ortogonální a je složena z vlastních vektorů matice \tl{A}$^T$\tl{A}
+%\section{Singulární rozklad}
+%\todo[inline]{Stručně posat singulární rozklad PCA a ortogonální projekci na podprostor}
+%Singulární SVD\footnote{Z anglického Singular Value Decomposition}rozklad umožní každou matici \tl{A} $\in$ \spc{R}{m \times n} rozložit jako
+%\begin{align}
+    %\mathbf{A} = \mathbf{USV}^T
+%\end{align}
+%kde matice \tl{S} je diagonální, matice \tl{U} je ortogonální a obsahje vlastní vektory matice \tl{AA}$^T$, obdobně je pak i matice \tl{V} ortogonální a je složena z vlastních vektorů matice \tl{A}$^T$\tl{A}
 
-\section{Ortogonální projekce na podprostor}
-\label{sec:projekce}
+%\section{Ortogonální projekce na podprostor}
+%\label{sec:projekce}
 
-\section{Analýza hlavních komponent}
-%Analýza hlavních komponent (PCA\footnote{Z anglického Principal Component Analysis}) 
+%\section{Analýza hlavních komponent}
+%%Analýza hlavních komponent (PCA\footnote{Z anglického Principal Component Analysis}) 
 
 
 \chapter{Kamera}
@@ -534,9 +551,11 @@ Nyní vypočítáme výšku každého bodu nad rovinou a prahováním této vzd�
 \end{figure}
 
 \subsection{Detekce normálového vektoru pomocí RANSAC}
+\label{sec:plane_ransac}
 Body jsou postupně prokládány roviny pomicí RANSAC algoritmu, viz. \ref{sec:ransac}. Zde je potřeba správně určit kritérium, při jehož splnění budeme mít jistotu, že dotekovaaná plocha představuje zem. Pokud by algoritmus skončil po detekci plochy, v jejimž okolí leží nejvíce bodů. Mohli bychom při velkém zastoupení kostek v obrazu dostat rovinu popisující horní stěnu těchto kostek. Jako terminační kritérium je tedy zvolena detekce dvou rovin a jejich následným porovnáním vybereme tu, která popisuje zemi.
 
 \subsection{Přístup založený na změně výšky}
+\label{sec:sobel_normal}
 Velice populární postup při segmentaci obrazu je založen na porovnání normálového vektoru v bodech obrazu, viz sekce \ref{sec:normal_methods}. Normálový vektor je vypočten pro každý bod obrazu a následně jsou body, jejichž normálový vektor má podobný směr, popřípadě i velikost, sloučeny do větších celků. V našem případě je vrchní stěna cihly paralelní se zemí a má tedy stejný normálový vektor. Nachází se však v jiné výšce. Pomocí výpočtu gradientu, který budeme realizovat užitím Sobelova operátoru aplikovaného na výšku bodů, spočítáme derivaci výšky. Ta by měla být nejvyšší v oblasti přechodu země - cihla. Následně pak sloučíme body s hodnotou gradientu výšky, která se liší v rámci skupiny maximálně o $\delta$. K tomu bylo využito upraveného CCL (Connected-component labeling) algoritmu. 
 
 Tato metoda, při správném odladění parametru $\delta$ pro danou scénu, funguje dosahuje dobrých. Problémem je však robustnost. Hodnoty parametru $\delta$ fungující na cihly v blízkosti kamery nedetekují cihly ve vzdálenosti řadově 2\,$m$ a více a naopak. Toto je způsobeno jednak šumem kamery, který podle rovnice \ref{error_stereo} roste kvadraticky, a zejména pak zkreslením vzdálenější hrany cihly kamerou, viz. obrázek \ref{fig:point_cloud_grad}. Kamera zde špatně nachází stereo páry a generuje mračna bodů, která ve skutečnosti neexistují. Ty zmírňují přechod cihla-zem a snižují tak hodnotu gradientu. Toto chování je dobře vidět na obrázku \ref{fig:sobel_segment}.
@@ -565,8 +584,25 @@ V tomto algoritmu předpokládáme, že cihly se navzájem nedotýkají, popří
 Principem tohoto algoritmu je transformace jednotlivých vrstev tak, aby jejich půdorys nebyl zkreslený prespektivní transformací. Následně je z půdorysu vrtvy určena poloha kosty v dané vrstvě.
 
 Chceme-li určit půdorys $n$-té vrstvy cihel, pak k tomuto je potřeba znát půdorysy vrstev $n,...,m$, kde $m$ je nejvyšší vrstva cihel v obrazu. 
-Obraz $X$ je nejprve prahován podle $L$, viz \ref{subsection:segmentation}, kde spodním limitem prahování je $n$. Na prahovaný obraz je použita morfologická operace otevření, viz sekce \ref{sec:morphology}. Pomocí této operace je obraz vyfiltrován a jsou odstraněny body představující šum. Následně jsou nelezeny vnější obrysy  shluků cihel\footnote{Shlukem cihel se myslí skupina cihel, které jsou spojeny dotekem} pomocí Suzukiho algoritmu \cite{suzuki1985topological}, kde jsme využili již implementovaného programu v knihovně OpenCV.
+Obraz $X$ je nejprve prahován podle $L$, viz \ref{subsection:segmentation}, kde spodním limitem prahování je $n$. Na prahovaný obraz je použita morfologická operace otevření, viz sekce \ref{sec:morphology}. Pomocí této operace je obraz vyfiltrován a jsou odstraněny body představující šum, viz obrázek \ref{fig:morfology_open}. Následně jsou nelezeny vnější obrysy  shluků cihel\footnote{Shlukem cihel se myslí skupina cihel, které jsou spojeny dotekem} pomocí Suzukiho algoritmu \cite{suzuki1985topological}, kde jsme využili již implementovaného programu v knihovně OpenCV.
 
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.93\linewidth]{pictures/before_open.png}
+      \caption{Obraz před filtrací}
+      \label{subfig:pic_close}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=0.99\linewidth]{pictures/after_open.png}
+      \caption{Obraz po filtraci}
+      \label{subfig:pic_open}
+    \end{subfigure}
+    \caption{Filtrování obrazu pomocí morgologické oprace otevření}
+    \label{fig:morfology_open}
+\end{figure}
 Pomocí průměrového filtru jsou vyhlazena data reprezentujících obrys shluku cihel, resp. jejich výška. Poté je obrys aproximován konvexním obalem, čímž se zmenší počet bodů, kterými popisujeme daný shluk cihel.
 
 Obraz horní stěny kvádr nepodléhá prespektivnímu zkreslení, je-li horní stěna kolmá na optickou osu kamery, tedy normálový vektor reprezentující horní stěnu kvádru musí být rovnoběžný s optickou osou kamery. Normálový vektor horní stěny kvádru ležícího na zemi je stejný s normálovým vektorem \tl{n} země, který byl určen v sekci \ref{sec:normal_est}. Natočení země vůči kameře je vnější vnější parametr kamery. Body obrazu můžeme tedy transformovat do jejich projekce na rovinu země pomocí upraveného vzorce \ref{eq:world_to_img} jako \unsure{Bod \tl{x} bude vyjádřen v homogenních souřadnicích a bude mít tedy tvar x,y,z,1 ...mohu rovnici dole zapsat takto? jedná se o korektní převedení rovnice \ref{eq:world_to_img}, nebo musím explicitně vyjádřit \tl{x}?}
@@ -587,6 +623,7 @@ Výše uvedený postup se je proveden pro každý obrys odpovídající skupině
 \end{figure}
 
 \subsection{Detekce pomocí RANSAC}
+\label{sec:ransac_det}
 Postup popsaný v sekci \ref{sec:bounding_rect} funguje pouze za zjednodušujících předpokladů a navíc jeho přesnost značně klesá při nesprávném generování stereo párů, jako je vidět na obrázku \ref{fig:point_cloud_grad}. Tato metoda funguje pro všechna natočení cihel a je i velice robustní.
 
 Začneme obdobně jako v sekci \ref{sec:bounding_rect} transformací bodů představující obrys pomocí vztahu \ref{eq:pic_to_world}. Mezi body, představující prespektivně nezkreslený obrys, najdeme pomocí RANSAC přímku $p_1$. Ta odpovídá některé z delších stěn cihly, viz. obrázek \ref{fig:RANSAC_line}. Následně je opět použit RANSAC a mezi zbylími body je nelezena přímka $p_2$ rovnoběžná s $p_1$. Tímto dostaneme obě protější stěny cihly. Hledání zbylých 2 kratších stěn je nerealizovatelné i pomocí RANSAC algoritmu, jelikož tyto stěny jsou daleko kratší a tedy reprezentovány méně body. Pokud je obraz zašuměn, pak není možné najít přímku odpovídající této stěně.
@@ -619,11 +656,150 @@ Ve chvíli kdy jsou nelezeny všechny obdélníky, jsou tyto stejně jako v sekc
 
 \chapter{Výsledky}
 \label{sec:výsledky}
-\todo[inline]{Porovnání jednotlivých výsledků, přesnost + časová náročnost}
+%\todo[inline]{Porovnání jednotlivých výsledků, přesnost + časová náročnost}
+%Za účelem vyhodnočení výsledků bylo ručně 
+\section{Označení polohy cihel v mračnech bodů}
+Za účelem vyhodnocení přesnosti výše prezentovaných aloritmů, byla ručně zanesená poloha jednotlivých cihel do mračen bodů. Vzhledem k nedostupnosti nekomerčních softwarů umožňujících manuální oznočování v mračnech bodů, byla vytvořena vlastní aplikace v prostředí Point Cloud Library (PCL) \cite{pcl}. Ta pro každé mračno bodů, kombinací RANSAC a PCA algoritmu, přesně určí rovinu reprezentující zem. Následně jsou odstraněny body reprezentující zem a do zbylých bodů je ručne zanesena poloha první vrstvy cihel. Tento postup se opakuje pro každé patro zdi, toto je možné vidět na obrázku \ref{fig:labler}.
+\begin{figure}
+    \centering
+    \includegraphics[width = 0.8\linewidth]{pictures/labelr.png}
+    \caption{Prostředí aplikace pro označení pozice cihel}
+    \label{fig:labler}
+\end{figure}
+Tímto způsobem bylo označeno 20 náhodně vybraných obrázků obsahující nedotýkající se cihly a 15 obrázků, na kterých cihly tovří složitější struktury. Poloha všech cihel je nakonec uložena do textového souboru, kde každá cihla je reprezentována čtyřmi body v euklidovském prostoru a číslem označujícím vrstvu, ve které se daná cihla nachází.
 
+\section{Vyhodnocovací kritéria}
+Úspěšnost detekce je hodnocena podle časové náročnosti daného programu a přesnoti detekce jednotlivých cihel. Při vyhodnocení přesnosti detekce hodnotíme pouze přesnost umístění horní stěny cihly, jelikož ostatní parametry jsou určitelné ze znalosti normálového vektoru země.
+
+Nechť $C$ je mračno bodů, pro které byly manuálně zaznamenáno 
+$m$ poloh  obdélníků $L_i$, které reprezuntují polohu cihel. Pokud náš program na detekci cihel vrátí množinu obdélníků $S_1 ... S_n$, pak se přesnost $p(C)$ určí následovně.
+\begin{align}
+    A(L) = \sum_{i=1}^{i = m}|\rectangle L_i| \quad A(S) = \sum_{i=1}^{i = n}|\rectangle S_i|, \quad I = \sum_{i = 1}^{i = n} \sum_{j = 1}^{j=m} | \rectangle S_i \cup \rectangle L_j | \label{eq:flat} \\
+    \text{TP} = I, \quad \text{FP} = A(S) - I, \quad \text{FN} = A(L) - I \\
+    p = \frac{\text{TP}}{\text{TP} + \text{FN} + \text{FP}} \label{eq:accuracy}
+\end{align}
+V rovnici \ref{eq:flat} jsme symbolem $|\rectangle L_i|$ označili plochu určenou obdélníkem $L_i$.  
+Časové náročnost programu je určena měřením času běhu programu na jednom jádře procesoru Intel\textregistered{} Core\textsuperscript{TM} i5-7200U, který pracuje s frekvencí 2,5$\,$GHz v normálním módu a s frekvencí 3,1$\,$GHz v turbo módu.
+
+\section{Určení normálového vektoru}
+\label{sec:res_normal}
+Přesnost určení normálového vektoru jsme vyhodnotili na přesnosti detekce objektů, jelikož tato silně závisí na přesnosti určení normálového vektoru. Jedná se navíc o jediné relevantní kritérium, podle kterého můžeme přesnost určit.
+
+Výsledky algoritmu prezentovaného v sekci \ref{sec:sobel_normal} nebudeme vyhodnocovat, jelikož nebylo možné nastavit parametry algoritmu tak, aby detekoval normálový vektor země při různé vzdálenosti kamery od obrazu.
+
+
+Přesnost a doba průběhu algoritmu, který byl popsán v sekci \ref{subsec:height} záleží zejména na velikosti parametru $\delta$, který určuje množství bodů, kterými bude v druhém kroku algoritmu proložena rovina PCA algoritmem. Závislost přesnosti na časové náročnosti algoritmu je vidět na grafu \ref{fig:delta_detekce_normaly}, kde detekce byla provedena algoritmem pospaným v sekci \ref{sec:bounding_rect}. RANSAC algoritmus \ref{sec:ransac_det} vykazoval podobnou tendenci přesnosti detekce v závislosti na parametru $\delta$ a není tedy uváďen.
+\begin{figure}
+    \centering
+    \includegraphics[width = \linewidth]{pictures/normal_acc.png}
+    \caption{Přesnost detekce v závislosti na parametru $\delta$}
+    \label{fig:delta_detekce_normaly}
+\end{figure}
+
+Chování algoritmu \ref{sec:plane_ransac} závisí především na dvou parametrech a to maximálním počtu iterací $n$ a vzdálenosti $\epsilon$ od modelu, ve které se musí nacházet bod, aby byl uvažován součástí modelu. Závislost přesnosti a časové náročnosti na $\epsilon$ je vidět na grafu \ref{fig:plane_ransac}, kde algoritmus byl testován při neomezeném počtu iterací. Je vidět, že algoritmus dosahuje nejlepších výsledků při $\epsilon = 60\,mm - 100\,mm$.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{pictures/plane_ransac.png}
+  %\caption{Závislost přesnosti na $\epsilon$}
+  \label{subfig:epsilon}
+  \caption{Přesnost RANSAC algoritmu pro detekci plochy v závislosti na $\epsilon$}
+\label{fig:plane_ransac}
+\end{figure}
+
+Pro hodnotu parametru $\epsilon = 80\,mm$ jsem provedli test závislosti přesnosti na maximálním počtu iterací. Výsledky na obrázku \ref{fig:ransac_max_iter} jsou průměrem pěti průběhů testu, jelikož RANSAC je nedeterministický algoritmus a jeho výsledky se v každém běhu mohou výrazně lišit. Z grafu je vidět, že maximální přesnost je vždy dosažene nejpozději po 12-ti iterací. Časová náročnost stále stoupá, jelikož jsme využili již implementovaného RANSAC algoritmu v knihovně PCL \cite{pcl}, který byl lépe optimalizovaný, než naše implementace. Nenabízí však možnost uknčení algoritmu, pokud pro daný počet bodů $\mathbf{p}_i$ platí $|\mathbf{p}_i - \mathbf{m}| < \epsilon$, kde \tl{m} je bod modelu, který je nejblíže bodu $\mathbf{p}_i$.
+
+\begin{figure}
+    \centering
+    \includegraphics[width =\linewidth]{pictures/plane_ransac_iter.png}
+    \caption{Přesnost RANSAC algoritmu pro detekci plochy v závislosti na $n$}
+    \label{fig:ransac_max_iter}
+\end{figure}
+
+Po detekci normálového vektoru následuje sémentická segmentace obrazu. Tato probíhá pro všechny metody detekce prahováním vzdálenosti jednotlivých bodů od najité plochy reprezuntující zem. Jedná se o deterministický algoritmus, který proběhne v čase $62\,ms$.
+
+\section{Detekce objektů}
+\subsection{Nedotýkající se cihly}
+V této sekci budou všechny programy testovány na datasetu, ve kterém se jednotlivé cihly vzájemně nedotýkají.
+
+Přesnost algoritmu, který byl popsán v sekci \ref{sec:bounding_rect} je vidět na grafech \ref{fig:delta_detekce_normaly}, \ref{fig:plane_ransac}, \ref{fig:ransac_max_iter}. Doba průběhu algoritmu závisí na počtu cihel, které se nachází ve scéně. Průměrně je detekce provedena v čase $872\,ns$ a nejpomalejší detekce v testovaném datasetu byla provedena za čas $978\,ns$.
+
+Algoritmus pro detekci založený na RANSAC, popsaný v sekci \ref{sec:ransac_det} si dynamicky určuje maximální počet iterací v závislosti na počtu bodů, které tvoří obrys skupiny kostek. Chování tohoto algoritmu je tedy určeno parametrem $\epsilon$, jehož význam je stejný jako v sekci \ref{sec:res_normal}. Přesnost detekce a časová náročnost v závislosti na $\epsilon$ je vidět na obrázku \ref{fig:ransac_obj_det}. Normálový vektor země, který je pro detekci potřeba byl urečen pomocí modifikovaného PCA algoritmu, který byl popsan v sekci \ref{subsec:height}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width = \linewidth]{pictures/ransac_obj_det.png}
+    \caption{}
+    \label{fig:ransac_obj_det}
+\end{figure}
+
+Výsledky detekce jsou vidět na obrázku \unsure{Obrázky se zdají být malé, ale pokud je dám samostatně, tak mi to přijde moc obrázků na málo textu} \ref{fig:object_det_res}, kde modrou barvou je značen výsledek programu a červeně manuálně zanesená poloha cihel. Z obrázku \ref{subfig:object_det_good} je vidět, že detekce probíhá velice přesně a chyba algoritmu může být způsobena nepřesností při označování skutečných poloh cihel. Dokonce i nejhorší detekce v celém datasetu, která je na obrázku \ref{subfig:object_det_bad}, správně nalezne nacházející se cihlu, pouze špatně odhadne její natočení a velikost.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.99\linewidth]{pictures/res_det_good.png}
+      \caption{Nejlepší detekce v datasetu}
+      \label{subfig:object_det_good}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=0.99\linewidth]{pictures/res_det_bad.png}
+      \caption{Nejhroší detekce v datasetu}
+      \label{subfig:object_det_bad}
+    \end{subfigure}
+    \caption{Ilustrace výsledků detekce cihel}
+    \label{fig:object_det_res}
+\end{figure}
+ 
+\subsection{Dotýkající se cihly}
+Jediný algoritmus, schopný detekce je popsán v sekci \ref{sec:ransac_det}. Jeho výsledky na datasetu s nedotýkajícími se cihlami jsou vidět na obrázku \ref{fig:ransac_obj_det}. Pro paremetr $\epsilon = 12\,mm$ dostaneme na datasetu, který obsahuje pouze složitější struktury cihel, dostaneme následující výsledky.
+\begin{itemize}
+    \item Průměrná úspěšnost detekce $68,24\,\%$
+    \item Nejlépe klasifikované mračno bodů $84,3\,\%$
+    \item Nejhůře klasifikované mračno bodů $39,7\,\%$
+    \item Průměrná časová náročnost $78,8\,ms$
+\end{itemize}
+Algoritmus tedy dosahuje podobných výsledků, pouze v o něco horším časem. Příklad úspěšné detekce ji vidět na obrázku \ref{fig:all_layers_det}
+\begin{figure}
+    \centering
+    \includegraphics[width = \linewidth]{pictures/upraveno_3rdlayaer.png}
+    \caption{}
+    \label{fig:all_layers_det}
+\end{figure}
+\section{Shrnutí výsledků}
+V této sekci srovnáme výsledky kombinací jednotlivých algoritmů. Součastí každého z nich je prahování bodů podle vzdáleosti od roviny, které trvá $62\,ms$.
+
+V tabulce \ref{tab:vysledky} jsou pužity následující zkratky RANSAC - detekce plochy pomocí ransac algoritmu, kde li a hi značí nízký a vysoký počet maximálních iterací. Jako PCA je označen algoritmus pro detekci plochy pospaný v sekci \ref{subsec:height}, kde m a v značí nízkou a vysokou hodnoty parametru $d$. Označením RANSAC-det je myšlen algoritmus popsaný v sekci \ref{sec:ransac_det}.
+\begin{table}
+    \centering
+    \begin{tabular}{|l|c|c|c|c|c|c|} \hline
+        algoritmus &  přesnost [\%]& čas [ms]\\ \hline
+        RANSAC-li a Nejmenší ohraničující odbélník & 43,2 & 108 \\ \hline
+        RANSAC-hi a Nejmenší ohraničující obdélník & 61,3 & 143 \\ \hline
+        PCA-n a Nejmenší ohraničující obdélníku & 57,5 & 148 \\ \hline 
+        PCA-v a Nejmenší ohraničující obdélník & 65,2 & 243 \\ \hline
+        RANSAC-li a RANSAC-det & 58,4 & 182 \\ \hline
+        RANSAC-hi a RANSAC-det & 68,7 & 217 \\ \hline
+        PCA-n a RANSAC-det & 63,1 & 223 \\ \hline 
+        PCA-v a RANSAC-det & 70,8 & 328 \\ \hline
+        PCA-v a RANSAC-det - složité objekty & 68,24 & 341 \\ \hline
+    \end{tabular}
+    \caption{Porovnání výsledků jednotlivých algoritmů}
+    \label{tab:vysledky}
+\end{table}
 \chapter{Závěr}
 \label{sec:závěr}
-\todo[inline]{Zhodnocení vhodnosti IntelRealsense pro detekci a zhodnocení prezentovaných algoritmů}
+Byl navrhnut postup detekce nedotýkajících se objektů z hloubkových dat, generovaných stereo kamerou. Tento postup je schopný detekovat objekty s úspěšností až 70,8\,\%. Skutečné vysledky se mohou lišit, což je způsobeno zejména nepřesností manuálního značení poloh jednotlivých cihel.
+
+Tento program byl dále rozšířen, aby byl schopen detekce cihel nacházajecích se v složitějších strukturách, jako je třeba zeď tvořící roh, viz obrázek \ref{fig:all_layers_det}. Tyto ztěžující podmínky mají pouze minimální vliv na výsledky programu. Detekce je provedena se ztrátou přesnosti 2,56\,\% a pouze o 13\,ms pomaleji. Zadání soutěže MBZIRC bylo nakonec upraveno a jednotlivé cihly byly v aréně rozmístěny tak, že mezi nimi ke kontaktu nedocházelo.
+
+Omezujícím faktorem programu je rychlost, kde i při snížené přesnosti detekce na 68,7\,\% jsme schopni zpracovat pouze 5 snímků za sekundu. Oproti tomu používaná kamera Intel\textregistered{} Realsense$^{TM}$ pracuje s rychlostí 30 snímků za sekundu. Tento problém by mohl být vyřešen použítím výkonějšího prcesoru, popřípadě paralelizací programu na více jader procesoru. Další možností zrychlení programu je použití IMU senzorů, čímž bychom získali informaci o natočení roviny, na které se nachází cihly.
+
+Dále by bylo možné dosáhnout lepších výsledků, kdyby byla použita stereo kamerá, které dosahuje přesnějšího snímání hloubkových dat, než námi použitý Intel\textregistered{} Realsense$^{TM}$ D435. Výstup z kamery bývá často nepřesný a to zejména při prudké změně hloubky bodů (viz obrázek \ref{fig:point_cloud_grad}), což značně zvyšuje náročnost přesné detekce. RealSense navíc generuje velké množství bodů a tím zvyšuje časovou náročnost zpracování těchto dat. Pouhý výpočet lineární rovnice pro každý bod a následné prahování trvalo na námi použitém procesoru 62\,ms. Ideální by bylo použití LIDARu, který generuje menší počet bodů, tyto však bývají daleko přesnější.
+
+Prezentované výsledky byly získány na datasetu, který byl pořízen člověkem držícím Intel\textregistered{}  RealSense$^{TM}$ kameru. Toto zapřícinilo menší úhel mezi rovinou země a optickou osou kamery. Kvůli tomu je na všech datech pozorovatelné velké prespektivní zkreslení. Předpokládáme, že při použití RealSense na dronu bude sníženo prespektivní zkreslení obrazu a přesnost detekce se tak výražně zvýší.
 
 
 \bibliography{citations}
