@@ -86,7 +86,8 @@
 
 % This include the specification file, and does nothing more
 \ctutemplateset{include.specification}{
-	\includepdf[pages=-]{\tl_use:c{ g_ctuthesis_field_specification-file_tl }}
+    \includepdf[pages=-]{\tl_use:c{ g_ctuthesis_field_specification-file_tl }}
+    %\includepdf{~/uprava_bp/pictures/zadani.pdf}
 }
 
 % Includes the specification as a chapter
@@ -147,6 +148,11 @@
 		\chapter{\thanksname}\noindent
 		\ctufield{thanks}
 }
+\ctutemplateset{twocolumn.symb}{
+    \selectctulanguage{title}
+    \chapter{Seznam\; použitých\; zkratek}\noindent
+    \ctufield{symb}
+}
 
 \ctutemplateset{twocolumn.declaration}{
 		\selectctulanguage{title}
@@ -185,6 +191,8 @@
 		\clearpage
 		\ctutemplate{twocolumn.loft}
 	} { }
+    \clearpage
+        \ctutemplate{twocolumn.symb}
 	\end{twocolumnfrontmatterpage}
 }
 
@@ -194,6 +202,7 @@
 	\newpage
 		\ctuifswitch { front-list-of-tables } { \ctutemplate{twocolumn.listoftables} } { }
 }
+
 
 % The maketitle command (moreorless): roman page numbering
 \ctutemplateset{maketitle}{

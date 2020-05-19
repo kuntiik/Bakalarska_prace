@@ -8,7 +8,7 @@
 	title-czech = {Detekce objektů z hloubkové kamery},
 	title-english = {Object Detection from Depth camera},
 	%subtitle-czech = {Cesta do tajů kdovíčeho},
-	subtitle-english = {Journey to the who-knows-what wondeland},
+	%subtitle-english = {Journey to the who-knows-what wondeland},
 	doctype = B,
 	faculty = F3,
 	department-czech = {Katedra kybernetiky},
@@ -21,13 +21,13 @@
 	subfieldofstudy-english = {Mathematical Modelling},
 	%fieldofstudy-czech = {Matematcké inženýrství},
 	subfieldofstudy-czech = {Kybernetika a robotika},
-	keywords-czech = {slovo, klíč},
-	keywords-english = {word, key},
+	keywords-czech = {detekce objektů, stereokamra, konvexní obal mračno bodů, RGB-D, RANSAC, PCA},
+	keywords-english = {object detection, stereo camera, convex hull, point cloud, RGB-D, RANSAC, PCA},
 	day = 11,
 	month = 5,
 	year = 2020,
-	%specification-file = {ctutest-zadani.pdf},
-%	front-specification = true,
+    specification-file = {zadani.pdf},
+    front-specification = true,
 %	front-list-of-figures = false,
 %	front-list-of-tables = false,
 %	monochrome = true,
@@ -41,6 +41,8 @@
 	\def\subfieldofstudyname{Studijní program}%
 }
 
+%\ctutemplate{include.specification}
+
 \ctutemplateset{maketitle twocolumn default}{
 	\begin{twocolumnfrontmatterpage}
 		\ctutemplate{twocolumn.thanks}
@@ -49,9 +51,108 @@
 		\ctutemplate{twocolumn.abstract.in.secondlanguage}
 		\ctutemplate{twocolumn.tableofcontents}
 		\ctutemplate{twocolumn.listoffigures}
+        \ctutemplate{twocolumn.symb}
 	\end{twocolumnfrontmatterpage}
 }
+\begin{thanks}
+Tímto bych chtěl poděkovat panu RNDr. Petru Štěpánovi,  Ph.D. za vedení práce. Zároveň bych  chtěl poděkovat své rodině a přítelkyni za podporu při studiu a tvorbě práce.
+\end{thanks}
 
+\begin{abstract-czech}
+    Tato práce se zabývá detekcí objektů z RGB-D dat. Zdrojem těchto dat je stereokamera Intel\textregistered{} Realsense. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navření vlastního programu na detekci normálového vektoru plochy a následné detekci na ploše ležícich objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA a kombinují tyto s naši apriorní znalostí tvaru objektů. Tyto programy jsou následně vyhodnoceny na manuálně označených datech,čímž je ověřeno že jsou schopny přesné detekce v reálném čase.
+\end{abstract-czech}
+
+\begin{abstract-english}
+    ...bude přeložen po schválení českého abstraktu
+\end{abstract-english}
+\begin{declaration}
+Prohlašuji, že jsem předloženou práci
+vypracoval samostatně a že jsem uvedl
+veškeré použité informační zdroje v
+souladu s Metodickým pokynem o
+dodržování etických principů při přípravě
+vysokoškolských závěrečných prací. \\
+V Praze dne 26. května 2017 \\ \\
+.................................\\
+podpis autora práce
+\end{declaration}
+%\begin{symb}
+    %RANSAC \newline
+    %PCA \\
+    %ICP \\
+    %IMU \\
+    %CCL \\
+    %DBSCAN \\ \\
+    %RGB-D \\
+    %MBZIRC \\ \\
+    %LIDAR \\
+    %HOG \\
+    %CAD \\
+    %SURF \\
+    %SIFT \\
+    %BRIEF \\ \\
+    %PCL \\ 
+    %ORB \\
+    %SVM
+
+    %\newpage \noindent
+    %Random sample consensus \\
+    %Principal Component Analysis \\
+    %Iterative Closest Point \\
+    %Inerční měřící jednotka\\
+    %Connected-component labeling \\
+    %Density-based spatial clustering of applications with noise \\ 
+    %Red, green, blue - depth \\
+    %Mohamed Bin Zayed International Robotics Challenge \\
+    %Light Detection and Ranging \\
+    %Histogram of Oriented Gradients \\
+    %Computer Aided Design \\
+    %Speeded up robust features \\
+    %Scale-invariant feature transform \\
+    %Binary Robust Independent Elementary Features \\
+    %Point Cloud Library \\
+    %Oriented FAST and rotated BRIEF \\
+    %Support vector machines
+%\end{symb}
+
+\begin{symb}
+    PCA \\ \\
+    IMU \\ \\
+    RGB-D \\ \\
+    RANSAC \newline
+    ICP \\
+    CCL \\
+    DBSCAN \\ \\
+    MBZIRC \\ \\
+    LIDAR \\
+    HOG \\
+    CAD \\
+    SURF \\
+    SIFT \\
+    BRIEF \\ \\
+    PCL \\ 
+    ORB \\
+    SVM
+
+    \newpage \noindent
+    Principal Component Analysis (Analýza hlavních komponent) \\
+    Intertial measurement unit (Inerční měřící jednotka)\\
+    Red, green, blue - depth  (Červená, zelená, modrá - hloubka)\\
+    Random sample consensus \\
+    Iterative Closest Point \\
+    Connected-component labeling \\
+    Density-based spatial clustering of applications with noise \\ 
+    Mohamed Bin Zayed International Robotics Challenge \\
+    Light Detection and Ranging \\
+    Histogram of Oriented Gradients \\
+    Computer Aided Design \\
+    Speeded up robust features \\
+    Scale-invariant feature transform \\
+    Binary Robust Independent Elementary Features \\
+    Point Cloud Library \\
+    Oriented FAST and rotated BRIEF \\
+    Support vector machines
+\end{symb}
 % Theorem declarations, this is the reasonable default, anybody can do what they wish.
 % If you prefer theorems in italics rather than slanted, use \theoremstyle{plainit}
 %\theoremstyle{plain}
