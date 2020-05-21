@@ -21,7 +21,7 @@
 	subfieldofstudy-english = {Mathematical Modelling},
 	%fieldofstudy-czech = {Matematcké inženýrství},
 	subfieldofstudy-czech = {Kybernetika a robotika},
-	keywords-czech = {detekce objektů, stereokamra, konvexní obal mračno bodů, RGB-D, RANSAC, PCA},
+	keywords-czech = {detekce objektů, stereokamra, konvexní obal, mračno bodů, RGB-D, RANSAC, PCA},
 	keywords-english = {object detection, stereo camera, convex hull, point cloud, RGB-D, RANSAC, PCA},
 	day = 11,
 	month = 5,
@@ -59,11 +59,12 @@ Tímto bych chtěl poděkovat panu RNDr. Petru Štěpánovi,  Ph.D. za vedení p
 \end{thanks}
 
 \begin{abstract-czech}
-    Tato práce se zabývá detekcí objektů z RGB-D dat. Zdrojem těchto dat je stereokamera Intel\textregistered{} Realsense. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navření vlastního programu na detekci normálového vektoru plochy a následné detekci na ploše ležícich objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA a kombinují tyto s naši apriorní znalostí tvaru objektů. Tyto programy jsou následně vyhodnoceny na manuálně označených datech,čímž je ověřeno že jsou schopny přesné detekce v reálném čase.
+    Tato práce se zabývá detekcí objektů z hloubkové složky RGB-D dat, jejichž zdrojem je stereokamera Intel\textregistered{} Realsense$^{TM}$. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navržení vlastního programu na detekci normálového vektoru plochy a následnému přesnému určení polohy na ploše ležících objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA jsou kombinovány s naši apriorní znalostí tvaru objektů. Navržené programy jsou následně vyhodnoceny na manuálně označených datech, čímž je ověřeno, že jsou schopny přesné detekce v reálném čase.
 \end{abstract-czech}
+    %Tato práce se zabývá detekcí objektů z RGB-D dat. Zdrojem těchto dat je stereokamera Intel\textregistered{} Realsense$^{TM}$. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navření vlastního programu na detekci normálového vektoru plochy a následné detekci na ploše ležícich objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA a kombinují tyto s naši apriorní znalostí tvaru objektů. Tyto programy jsou následně vyhodnoceny na manuálně označených datech,čímž je ověřeno že jsou schopny přesné detekce v reálném čase.
 
 \begin{abstract-english}
-    ...bude přeložen po schválení českého abstraktu
+    This work deals with object detection from the depth part of RGB-D data, which are produced by stereocamera Intel\textregistered{} Realsense$^{TM}$. Firstly, research of available methods for plane normal estimation from point clouds, picture segmentation and object detection is conducted. Based on this knowledge a program for detection of the surface normal and then precise location of on surface laying objects is proposed. This program is mainly based on RANSAC algorithm and PCA, which are combined with our aprior knowledge of the shapes of objects. Proposed programs are then evaluated on manualy labeled dataset, thereby it is validated, that they are capable of high accuracy object detection in real time.
 \end{abstract-english}
 \begin{declaration}
 Prohlašuji, že jsem předloženou práci
@@ -116,9 +117,9 @@ podpis autora práce
 %\end{symb}
 
 \begin{symb}
-    PCA \\ \\
-    IMU \\ \\
-    RGB-D \\ \\
+    PCA \\ 
+    IMU \\ 
+    RGB-D \\ 
     RANSAC \newline
     ICP \\
     CCL \\
@@ -135,9 +136,12 @@ podpis autora práce
     SVM
 
     \newpage \noindent
-    Principal Component Analysis (Analýza hlavních komponent) \\
-    Intertial measurement unit (Inerční měřící jednotka)\\
-    Red, green, blue - depth  (Červená, zelená, modrá - hloubka)\\
+    Principal Component Analysis \\
+    %Principal Component Analysis (Analýza hlavních komponent) \\
+    Intertial measurement unit \\
+    %Intertial measurement unit (Inerční měřící jednotka)\\
+    %Red, green, blue - depth  (Červená, zelená, modrá - hloubka)\\
+    Red, green, blue - depth  \\
     Random sample consensus \\
     Iterative Closest Point \\
     Connected-component labeling \\
