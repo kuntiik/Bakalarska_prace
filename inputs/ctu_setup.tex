@@ -7,8 +7,6 @@
 	otherlanguages = {slovak,english},
 	title-czech = {Detekce objektů z hloubkové kamery},
 	title-english = {Object Detection from Depth camera},
-	%subtitle-czech = {Cesta do tajů kdovíčeho},
-	%subtitle-english = {Journey to the who-knows-what wondeland},
 	doctype = B,
 	faculty = F3,
 	department-czech = {Katedra kybernetiky},
@@ -16,14 +14,10 @@
 	author = {Lukáš Kunt},
 	supervisor = {RNDr. Petr Štěpán, Ph.D.},
 	supervisor-address = {Ústav X, \\ Uliční 5, \\ Praha 99},
-	%supervisor-specialist = {John Doe},
-	fieldofstudy-english = {Mathematical Engineering},
-	subfieldofstudy-english = {Mathematical Modelling},
-	%fieldofstudy-czech = {Matematcké inženýrství},
 	subfieldofstudy-czech = {Kybernetika a robotika},
 	keywords-czech = {detekce objektů, stereokamra, konvexní obal, mračno bodů, RGB-D, RANSAC, PCA},
 	keywords-english = {object detection, stereo camera, convex hull, point cloud, RGB-D, RANSAC, PCA},
-	day = 11,
+	day = 21,
 	month = 5,
 	year = 2020,
     specification-file = {zadani.pdf},
@@ -59,7 +53,7 @@ Tímto bych chtěl poděkovat panu RNDr. Petru Štěpánovi,  Ph.D. za vedení p
 \end{thanks}
 
 \begin{abstract-czech}
-    Tato práce se zabývá detekcí objektů z hloubkové složky RGB-D dat, jejichž zdrojem je stereokamera Intel\textregistered{} Realsense$^{TM}$. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navržení vlastního programu na detekci normálového vektoru plochy a následnému přesnému určení polohy na ploše ležících objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA jsou kombinovány s naši apriorní znalostí tvaru objektů. Navržené programy jsou následně vyhodnoceny na manuálně označených datech, čímž je ověřeno, že jsou schopny přesné detekce v reálném čase.
+    Tato práce se zabývá detekcí objektů z hloubkové složky RGB-D dat, jejichž zdrojem je stereokamera Intel\textregistered{} Realsense$^{TM}$. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navržení vlastního programu na detekci normálového vektoru plochy a následnému přesnému určení polohy na ploše ležících objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA, které jsou kombinovány s naši apriorní znalostí tvaru objektů. Navržené programy jsou následně vyhodnoceny na manuálně označených datech, čímž je ověřeno, že jsou schopny přesné detekce v reálném čase.
 \end{abstract-czech}
     %Tato práce se zabývá detekcí objektů z RGB-D dat. Zdrojem těchto dat je stereokamera Intel\textregistered{} Realsense$^{TM}$. Nejprve je provedena rešerše dostupných metod pro hledání normálového vektoru plochy v mračnech bodů, segmentaci obrazu a detekci objektů. Posléze je těchto znalostí využito k navření vlastního programu na detekci normálového vektoru plochy a následné detekci na ploše ležícich objektů. Tyto programy vycházejí zejména z RANSAC algoritmu a PCA a kombinují tyto s naši apriorní znalostí tvaru objektů. Tyto programy jsou následně vyhodnoceny na manuálně označených datech,čímž je ověřeno že jsou schopny přesné detekce v reálném čase.
 
@@ -157,21 +151,3 @@ podpis autora práce
     Oriented FAST and rotated BRIEF \\
     Support vector machines
 \end{symb}
-% Theorem declarations, this is the reasonable default, anybody can do what they wish.
-% If you prefer theorems in italics rather than slanted, use \theoremstyle{plainit}
-%\theoremstyle{plain}
-%\newtheorem{theorem}{Theorem}[chapter]
-%\newtheorem{corollary}[theorem]{Corollary}
-%\newtheorem{lemma}[theorem]{Lemma}
-%\newtheorem{proposition}[theorem]{Proposition}
-
-%\theoremstyle{definition}
-%\newtheorem{definition}[theorem]{Definition}
-%\newtheorem{example}[theorem]{Example}
-%\newtheorem{conjecture}[theorem]{Conjecture}
-
-%\theoremstyle{note}
-%\newtheorem*{remark*}{Remark}
-%\newtheorem{remark}[theorem]{Remark}
-
-%\setlength{\parskip}{5ex plus 0.2ex minus 0.2ex}
